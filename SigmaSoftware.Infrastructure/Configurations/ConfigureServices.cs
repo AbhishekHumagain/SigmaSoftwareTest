@@ -1,11 +1,11 @@
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SigmaSoftware.Application.Common.Interfaces;
 using SigmaSoftware.Infrastructure.Persistence;
+using SigmaSoftware.Infrastructure.Persistence.Interceptors;
 using SigmaSoftware.Infrastructure.Services;
 using DbContext = SigmaSoftware.Infrastructure.Persistence.DbContext;
 
@@ -30,13 +30,17 @@ public static class ConfigureServices
             }
         );
 
-
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-
         #endregion
         #region Injected Services
+        services.AddScoped<AuditableEntitySaveChangesInterceptor>();
+        services.AddScoped<IDbContext>(provider =>
+        {
+            var options = provider.GetRequiredService<DbContextOptions<DbContext>>();
+            var mediator = provider.GetRequiredService<IMediator>();
+            var interceptor = provider.GetRequiredService<AuditableEntitySaveChangesInterceptor>();
 
-        services.AddScoped<IDbContext>(provider => provider.GetRequiredService<DbContext>());
+            return new DbContext(options, mediator, interceptor);
+        });
         services.AddScoped<DbContextInitializer>();
 
         services.AddTransient<IDateTime, DateTimeService>();
