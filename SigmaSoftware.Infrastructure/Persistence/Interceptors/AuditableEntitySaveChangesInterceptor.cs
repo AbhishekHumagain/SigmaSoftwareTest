@@ -24,7 +24,7 @@ public abstract class AuditableEntitySaveChangesInterceptor(IDateTime dateTime)
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private async void UpdateEntities(Microsoft.EntityFrameworkCore.DbContext? context)
+    private void UpdateEntities(Microsoft.EntityFrameworkCore.DbContext? context)
     {
         if (context == null) return;
 
@@ -60,5 +60,5 @@ public static class Extensions
         entry.References.Any(r =>
             r.TargetEntry != null &&
             r.TargetEntry.Metadata.IsOwned() &&
-            (r.TargetEntry.State == EntityState.Added || r.TargetEntry.State == EntityState.Modified));
+            r.TargetEntry.State is EntityState.Added or EntityState.Modified);
 }

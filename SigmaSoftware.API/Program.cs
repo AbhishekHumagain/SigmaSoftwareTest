@@ -1,15 +1,29 @@
+using SigmaSoftware.Application;
+using SigmaSoftware.Infrastructure.Configurations;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+
+
+builder.Services.AddApplicationServices();
+
+builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
+
+builder.Services.AddHttpContextAccessor();
+
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseMigrationsEndPoint();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -19,7 +33,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseHealthChecks("/health");
 
 app.MapControllers();
+
 
 app.Run();

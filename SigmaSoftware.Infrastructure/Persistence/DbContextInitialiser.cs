@@ -1,51 +1,78 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using SigmaSoftware.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace SigmaSoftware.Infrastructure.Persistence;
-
-public class DbContextInitializer
+namespace SigmaSoftware.Infrastructure.Persistence
 {
-    private readonly ILogger<DbContextInitializer> _logger;
-    private readonly Microsoft.EntityFrameworkCore.DbContext _context;
-
-    public DbContextInitializer(ILogger<DbContextInitializer> logger, DbContext context, IConfiguration configuration)
+    public class DbContextInitializer(ILogger<DbContextInitializer> logger, DbContext context)
     {
-        _logger = logger;
-        _context = context;
-    }
-
-    public async Task InitialiseAsync()
-    {
-        try
+        public async Task InitialiseAsync()
         {
-            if (_context.Database.IsNpgsql())
+            try
             {
-                await _context.Database.MigrateAsync();
+                if (context.Database.IsNpgsql())  // If using PostgreSQL
+                {
+                    await context.Database.MigrateAsync();  // Ensure latest migrations are applied
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred while initializing the database.");
+                throw;
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while initialising the database.");
-            throw;
-        }
-    }
 
-    public async Task SeedAsync()
-    {
-        try
+        public async Task SeedAsync()
         {
-            await TrySeedAsync();
+            try
+            {
+                await TrySeedAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred while seeding the database.");
+                throw;
+            }
         }
-        catch (Exception ex)
+
+        private async Task TrySeedAsync()
         {
-            _logger.LogError(ex, "An error occurred while seeding the database.");
-            throw;
+            if (!context.Candidate.Any())  // Check if the Candidates table is empty
+            {
+                var candidates = new[]
+                {
+                    new Candidate
+                    {
+                        Email = "john.doe@example.com",
+                        FirstName = "John",
+                        LastName = "Doe",
+                        PhoneNumber = "1234567890",
+                        CallTimeInterval = "9 AM - 11 AM",
+                        LinkedInProfileUrl = "https://linkedin.com/in/johndoe",
+                        GitHubProfileUrl = "https://github.com/johndoe",
+                        Comment = "Looking for opportunities in software development.",
+                    },
+                    new Candidate
+                    {
+                        Email = "jane.smith@example.com",
+                        FirstName = "Jane",
+                        LastName = "Smith",
+                        PhoneNumber = "0987654321",
+                        CallTimeInterval = "2 PM - 4 PM",
+                        LinkedInProfileUrl = "https://linkedin.com/in/janesmith",
+                        GitHubProfileUrl = "https://github.com/janesmith",
+                        Comment = "Experienced in project management and team leadership.",
+                    }
+                };
+
+                // Add seed candidates
+                await context.Candidate.AddRangeAsync(candidates);
+                await context.SaveChangesAsync(); // Save changes to the database
+            }
+            else
+            {
+                Console.WriteLine("Candidates table is already populated.");
+            }
         }
-    }
-    
-    private static async Task TrySeedAsync()
-    {
-        
     }
 }

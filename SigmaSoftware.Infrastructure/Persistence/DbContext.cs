@@ -2,36 +2,46 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SigmaSoftware.Application.Common.Interfaces;
+using SigmaSoftware.Domain.Entities;
 using SigmaSoftware.Infrastructure.Common;
 using SigmaSoftware.Infrastructure.Persistence.Interceptors;
 
 namespace SigmaSoftware.Infrastructure.Persistence;
 
-public class DbContext(
-    DbContextOptions<DbContext> options,
-    IMediator mediator,
-    AuditableEntitySaveChangesInterceptor auditableEntitySaveChangesInterceptor)
-    : Microsoft.EntityFrameworkCore.DbContext(options), IDbContext
+public class DbContext : Microsoft.EntityFrameworkCore.DbContext, IDbContext
 
 {
-    // public DbSet<UserInfo> UserInfos => Set<UserInfo>();
-    
+    private readonly IMediator _mediator;
+    private readonly AuditableEntitySaveChangesInterceptor _auditableEntitySaveChangesInterceptor;
+
+    public DbContext(
+        DbContextOptions<DbContext> options,
+        IMediator mediator,
+        AuditableEntitySaveChangesInterceptor auditableEntitySaveChangesInterceptor)
+        : base(options)
+    {
+        _mediator = mediator;
+        _auditableEntitySaveChangesInterceptor = auditableEntitySaveChangesInterceptor;
+    }
+
+    public DbSet<Candidate> Candidate => Set<Candidate>();
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(builder);
-        // builder.Entity<UserInfo>().HasQueryFilter(e =>  e.IsDeleted == false);
+        builder.Entity<Candidate>().HasQueryFilter(e =>  e.IsDeleted == false);
     }
    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(auditableEntitySaveChangesInterceptor);
+        optionsBuilder.AddInterceptors(_auditableEntitySaveChangesInterceptor);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await mediator.DispatchDomainEvents(this);
+        await _mediator.DispatchDomainEvents(this);
         return await base.SaveChangesAsync(cancellationToken);
     }
     
