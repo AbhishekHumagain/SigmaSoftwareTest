@@ -1,10 +1,10 @@
-﻿using SigmaSoftware.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SigmaSoftware.Domain.Entities;
 
 namespace SigmaSoftware.Infrastructure.Persistence
 {
-    public class DbContextInitializer(ILogger<DbContextInitializer> logger, DbContext context)
+    public class SigmaDbContextInitializer(ILogger<SigmaDbContextInitializer> logger, SigmaSigmaDbContext context)
     {
         public async Task InitialiseAsync()
         {

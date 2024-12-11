@@ -6,7 +6,6 @@ namespace SigmaSoftware.Application.Common.Exceptions;
 public class NotFoundException : ProjectException
 {
     public NotFoundException()
-        : base()
     {
     }
 

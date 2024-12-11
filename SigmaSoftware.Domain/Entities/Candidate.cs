@@ -1,8 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using SigmaSoftware.Domain.Common.Interfaces;
 
 namespace SigmaSoftware.Domain.Entities;
-
-using System.ComponentModel.DataAnnotations;
 
 public class Candidate : IBaseAuditableEntity
 {

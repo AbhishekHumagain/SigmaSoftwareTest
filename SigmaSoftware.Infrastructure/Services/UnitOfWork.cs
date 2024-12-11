@@ -1,20 +1,20 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SigmaSoftware.Application.Common.Interfaces;
-using DbContext = SigmaSoftware.Infrastructure.Persistence.DbContext;
+using SigmaSoftware.Infrastructure.Persistence;
 
 namespace SigmaSoftware.Infrastructure.Services;
 
-public sealed class UnitOfWork(DbContext dbContext, IMediator mediator) : IUnitOfWork, IDisposable
+public sealed class UnitOfWork(SigmaSigmaDbContext sigmaSigmaDbContext, IMediator mediator) : IUnitOfWork, IDisposable
 {
-    private bool _disposed = false;
+    private bool _disposed;
     private readonly IMediator _mediator = mediator;
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await sigmaSigmaDbContext.SaveChangesAsync(cancellationToken);
         }
         catch
         {
@@ -24,7 +24,7 @@ public sealed class UnitOfWork(DbContext dbContext, IMediator mediator) : IUnitO
     }
     public void Rollback()
     {
-        foreach (var entry in dbContext.ChangeTracker.Entries())
+        foreach (var entry in sigmaSigmaDbContext.ChangeTracker.Entries())
         {
             switch (entry.State)  
             {  
@@ -36,14 +36,13 @@ public sealed class UnitOfWork(DbContext dbContext, IMediator mediator) : IUnitO
                     break;  
                 case EntityState.Deleted:  
                     entry.Reload();  
-                    break;  
-                default: break;  
+                    break;
             }  
         }
     }
     public IGenericRepository<T> GenericRepository<T>() where T : class
     {
-        return new GenericRepository<T>(dbContext);
+        return new GenericRepository<T>(sigmaSigmaDbContext);
     }
 
     private void Dispose(bool disposing)
@@ -52,7 +51,7 @@ public sealed class UnitOfWork(DbContext dbContext, IMediator mediator) : IUnitO
         {
             if (disposing)
             {
-                dbContext.DisposeAsync();
+                sigmaSigmaDbContext.DisposeAsync();
             }
         }
         _disposed = true;
