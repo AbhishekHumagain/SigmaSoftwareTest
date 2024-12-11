@@ -11,4 +11,8 @@
       <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.11" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Events\" />
+    </ItemGroup>
+
 </Project>

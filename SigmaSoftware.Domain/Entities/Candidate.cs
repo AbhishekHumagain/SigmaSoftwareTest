@@ -11,13 +11,13 @@ public class Candidate : IBaseAuditableEntity
 
     [MaxLength(50)] public required string LastName { get; set; }
 
-    [Phone] [MaxLength(10)] public string? PhoneNumber { get; set; }
+    [Phone] [MaxLength(15)] public string? PhoneNumber { get; set; }
 
     [MaxLength(10)] public string? CallTimeInterval { get; set; }
 
-    [Url] [MaxLength(20)] public string? LinkedInProfileUrl { get; set; }
+    [Url] [MaxLength(50)] public string? LinkedInProfileUrl { get; set; }
 
-    [Url] [MaxLength(20)] public string? GitHubProfileUrl { get; set; }
+    [Url] [MaxLength(50)] public string? GitHubProfileUrl { get; set; }
 
     [MaxLength(200)] public required string Comment { get; set; } // Free text comment
     public Guid? CreatorUserId { get; set; }

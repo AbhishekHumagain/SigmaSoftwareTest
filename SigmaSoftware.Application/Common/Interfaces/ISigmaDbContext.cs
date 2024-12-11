@@ -5,6 +5,6 @@ namespace SigmaSoftware.Application.Common.Interfaces;
 
 public interface ISigmaDbContext
 {
-    DbSet<Candidate> Candidate { get; }
+    DbSet<Domain.Entities.Candidate> Candidate { get; }
 
 }

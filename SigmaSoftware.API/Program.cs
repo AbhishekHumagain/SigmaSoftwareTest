@@ -1,5 +1,6 @@
 using SigmaSoftware.Application;
 using SigmaSoftware.Infrastructure.Configurations;
+using SigmaSoftware.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +19,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
-
+const string allowedOrigins = "AllowedOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(allowedOrigins,
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration.GetSection("App:CorsOrigins").Get<string[]>())
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
 app.UseMigrationsEndPoint();
+app.UseCors(allowedOrigins);
 
 if (app.Environment.IsDevelopment())
 {
@@ -33,6 +45,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<SigmaDbContextInitializer>();
+    await initializer.InitialiseAsync();
+    await initializer.SeedAsync();
+}
+
 app.UseHealthChecks("/health");
 
 app.MapControllers();
