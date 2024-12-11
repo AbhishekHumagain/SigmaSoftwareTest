@@ -18,11 +18,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
-
+const string allowedOrigins = "AllowedOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(allowedOrigins,
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration.GetSection("App:CorsOrigins").Get<string[]>())
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
 app.UseMigrationsEndPoint();
+app.UseCors(allowedOrigins);
 
 if (app.Environment.IsDevelopment())
 {
