@@ -20,27 +20,26 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>(
         {
             return await next();
         }
-        
-        using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+
+        using var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+        var response =  await next();
+        if (response is Response { IsSuccess: false } res )
         {
-            var response =  await next();
-            if (response is Response { IsSuccess: false })
-            {
-                logger.LogInformation("Apollo UnitOfWork request Fails for: {@RequestName}", typeof(TRequest).Name);
+            logger.LogInformation("UnitOfWork request Fails for: {@RequestName}", typeof(TRequest).Name);
+            if (!res.Error!.CommitTransaction) // Check if transaction needs to be commited for the given failure case.
                 return response;
-            }
-            try
-            {
-             await unitOfWork.CommitAsync(cancellationToken);
-             transactionScope.Complete();
-             logger.LogInformation("Apollo UnitOfWork request Success for: {@RequestName}",typeof(TRequest).Name);
-             return response;
-            }
-            catch (Exception ex)
-            {
-                logger.LogInformation("Apollo UnitOfWork request Fails for: {@RequestName}",typeof(TRequest).Name);
-                throw new UnitOfWorkExceptions($"{ex.Message} : {ex.InnerException?.Message}", HttpStatusCode.InternalServerError);
-            }
+        }
+        try
+        {
+            await unitOfWork.CommitAsync(cancellationToken);
+            transactionScope.Complete();
+            logger.LogInformation("UnitOfWork request Success for: {@RequestName}",typeof(TRequest).Name);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation("UnitOfWork request Fails for: {@RequestName}",typeof(TRequest).Name);
+            throw new UnitOfWorkExceptions($"{ex.Message} : {ex.InnerException?.Message}", HttpStatusCode.InternalServerError);
         }
     }
 }

@@ -2,22 +2,22 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SigmaSoftware.Application.Common.Interfaces;
-using DbContext = SigmaSoftware.Infrastructure.Persistence.DbContext;
+using SigmaSoftware.Infrastructure.Persistence;
 
 namespace SigmaSoftware.Infrastructure.Services;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : class
 {
-    private readonly DbContext _dbContext;
+    private readonly SigmaSigmaDbContext _sigmaSigmaDbContext;
     private readonly DbSet<T> _dbSet;
     public T GetById(object id)
     {
         return _dbSet.Find(id);
     }
-    public GenericRepository(DbContext dbContext)
+    public GenericRepository(SigmaSigmaDbContext sigmaSigmaDbContext)
     {
-        _dbContext = dbContext;
-        _dbSet = _dbContext.Set<T>();
+        _sigmaSigmaDbContext = sigmaSigmaDbContext;
+        _dbSet = _sigmaSigmaDbContext.Set<T>();
     }
 
     public async Task<T> GetByIdAsync(Guid? id)
@@ -60,7 +60,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task<Guid> InsertAndGetAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
-        await _dbContext.SaveChangesAsync();
+        await _sigmaSigmaDbContext.SaveChangesAsync();
 
         //Returns primaryKey value
         return (Guid)entity.GetType().GetProperty("Id").GetValue(entity, null);
@@ -69,7 +69,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task<Guid> UpdateAndGetAsync(T entity, CancellationToken cancellationToken)
     {
         _dbSet.Update(entity);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _sigmaSigmaDbContext.SaveChangesAsync(cancellationToken);
 
         //Returns primaryKey value
         return (Guid)entity.GetType().GetProperty("Id").GetValue(entity, null);
@@ -81,7 +81,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return Task.CompletedTask;
     }
     
-    public T? SingleOrDefault(System.Linq.Expressions.Expression<Func<T, bool>> predicate)  
+    public T? SingleOrDefault(Expression<Func<T, bool>> predicate)  
     {  
         return _dbSet.Where(predicate).SingleOrDefault();  
     } 

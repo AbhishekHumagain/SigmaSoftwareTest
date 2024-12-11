@@ -15,7 +15,7 @@ public class Response
                 throw new InvalidOperationException();
             default:
                 IsSuccess = isSuccess;
-                Error = IsSuccess ? null : error;
+                Error = IsSuccess? null:error;
                 break;
         }
     }
@@ -52,7 +52,8 @@ public class Response<TValue> : Response
         _value = value;
     }
 
-    [NotNull] public TValue Result => _value!;
+    [NotNull]
+    public TValue Result => _value!;
 
     public static implicit operator Response<TValue>(TValue? value) => Create(value);
 }
