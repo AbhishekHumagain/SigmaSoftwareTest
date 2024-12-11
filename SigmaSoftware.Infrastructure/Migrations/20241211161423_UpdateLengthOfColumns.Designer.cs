@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SigmaSoftware.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using SigmaSoftware.Infrastructure.Persistence;
 namespace SigmaSoftware.Infrastructure.Migrations
 {
     [DbContext(typeof(SigmaSigmaDbContext))]
-    partial class SigmaSigmaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241211161423_UpdateLengthOfColumns")]
+    partial class UpdateLengthOfColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

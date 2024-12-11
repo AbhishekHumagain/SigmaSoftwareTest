@@ -1,5 +1,6 @@
 using SigmaSoftware.Application;
 using SigmaSoftware.Infrastructure.Configurations;
+using SigmaSoftware.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<SigmaDbContextInitializer>();
+    await initializer.InitialiseAsync();
+    await initializer.SeedAsync();
+}
+
 app.UseHealthChecks("/health");
 
 app.MapControllers();
